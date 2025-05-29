@@ -465,9 +465,7 @@ class AdvancedSymPyEngine:
             if expanded_left != current_eq.lhs or expanded_right != current_eq.rhs:
                 current_eq = Eq(expanded_left, expanded_right)
                 steps.append(("Expanding", str(current_eq)))
-            
-            # Step 2: Move terms to isolate variable
-            # This is a simplified approach - in practice, need more sophisticated step generation
+
             try:
                 solutions = solve(current_eq, target_var)
                 if solutions:
