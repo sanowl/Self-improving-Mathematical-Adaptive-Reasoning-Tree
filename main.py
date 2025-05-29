@@ -13,7 +13,6 @@ from collections import deque, defaultdict
 from enum import Enum
 import sympy as sp
 from sympy import symbols, Eq, solve, simplify, expand, factor, latex, parse_expr
-import random
 import copy
 import os
 import logging
@@ -32,6 +31,7 @@ import traceback
 from tqdm import tqdm
 import wandb
 from datetime import datetime
+import secrets
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -636,7 +636,7 @@ class ExperienceBuffer:
         self.buffer.append(experience)
     
     def sample(self, batch_size: int) -> List[Experience]:
-        return random.sample(self.buffer, min(batch_size, len(self.buffer)))
+        return secrets.SystemRandom().sample(self.buffer, min(batch_size, len(self.buffer)))
     
     def size(self):
         return len(self.buffer)
@@ -880,10 +880,10 @@ class MathematicalReasoningGenerator:
         for i in range(n):
             # Choose technique (prefer unexplored ones)
             unused_techniques = [t for t in available_techniques if t not in applied_techniques]
-            if unused_techniques and random.random() > 0.3:  # 70% chance to try new technique
-                technique = random.choice(unused_techniques)
+            if unused_techniques and secrets.SystemRandom().random() > 0.3:  # 70% chance to try new technique
+                technique = secrets.choice(unused_techniques)
             else:
-                technique = random.choice(available_techniques)
+                technique = secrets.choice(available_techniques)
             
             continuation, new_math_state = self._generate_step(state, technique)
             continuations.append((continuation, new_math_state, technique))
@@ -959,7 +959,7 @@ class MathematicalReasoningGenerator:
         operations = self.sympy_engine.generate_valid_algebraic_operations(eq)
         
         if operations:
-            operation_desc, new_equation = random.choice(operations)
+            operation_desc, new_equation = secrets.choice(operations)
             math_state.equations.append(new_equation)
             return f"{operation_desc}: {new_equation}"
         else:
@@ -987,20 +987,20 @@ class MathematicalReasoningGenerator:
     def _apply_substitution(self, math_state: MathematicalState) -> str:
         """Apply substitution step"""
         if math_state.variables:
-            var, value = random.choice(list(math_state.variables.items()))
+            var, value = secrets.choice(list(math_state.variables.items()))
             return f"Substituting {var} = {value} into the equation"
         
         # Create a substitution if none exists
         var = 'x'
-        value = random.randint(1, 10)
+        value = secrets.SystemRandom().randint(1, 10)
         math_state.intermediate_values[var] = value
         return f"Let {var} = {value}"
     
     def _apply_verification(self, math_state: MathematicalState) -> str:
         """Apply verification step"""
         if math_state.variables and math_state.equations:
-            var, value = random.choice(list(math_state.variables.items()))
-            eq = random.choice(math_state.equations)
+            var, value = secrets.choice(list(math_state.variables.items()))
+            eq = secrets.choice(math_state.equations)
             
             try:
                 # Verify the solution
@@ -1539,7 +1539,7 @@ class ExperimentRunner:
             logger.info(f"Training epoch {epoch + 1}/{num_epochs}")
             
             # Sample subset of problems for training
-            epoch_problems = random.sample(all_problems, min(max_problems, len(all_problems)))
+            epoch_problems = secrets.SystemRandom().sample(all_problems, min(max_problems, len(all_problems)))
             epoch_loss = []
             epoch_correct = 0
             epoch_scores = []
@@ -1604,7 +1604,7 @@ class ExperimentRunner:
             all_problems.extend(problems)
         
         max_problems = self.config.evaluation_params['max_problems']
-        eval_problems = random.sample(all_problems, min(max_problems, len(all_problems)))
+        eval_problems = secrets.SystemRandom().sample(all_problems, min(max_problems, len(all_problems)))
         
         predictions = []
         ground_truth = []
@@ -1653,7 +1653,7 @@ class ExperimentRunner:
             all_problems.extend(problems)
         
         max_problems = min(10, len(all_problems))  # Smaller subset for baselines
-        eval_problems = random.sample(all_problems, max_problems)
+        eval_problems = secrets.SystemRandom().sample(all_problems, max_problems)
         
         baselines = {
             'chain_of_thought': ChainOfThoughtBaseline(),
